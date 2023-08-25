@@ -161,8 +161,9 @@ Record:
 		default:
 		}
 	}
-	log.Printf("Dump complete. Saved to %s", name)
 	writeLatestSymlink(name)
+	log.Printf("Dump complete. Saved to %s", name)
+	fmt.Fprintf(os.Stdout, "done\n")
 }
 
 func writeLatestSymlink(name string) {
