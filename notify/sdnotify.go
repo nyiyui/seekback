@@ -54,10 +54,6 @@ func Notify(state string) (err error) {
 	if err != nil {
 		return fmt.Errorf("sdnotify: Write: %w", err)
 	}
-	if S == nil {
-		log.Printf("notify: %s", state)
-	} else {
-		S.Infof("notify: %s", state)
-	}
+	log.Printf("notify: %s", state)
 	return nil
 }

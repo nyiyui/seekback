@@ -25,10 +25,10 @@
             nativeBuildInputs = with pkgs; [
               pkg-config
               go
-              portaudio
             ];
             buildInputs = with pkgs; [
               nixfmt
+              portaudio
             ];
           };
         };
@@ -36,9 +36,16 @@
           inherit version;
           src = ./.;
           tags = [ "sdnotify" ];
-          vendorSha256 = pkgs.lib.fakeSha256;
+          #vendorSha256 = pkgs.lib.fakeSha256; # use ./base64-hex to get sha256 from error output
+          vendorSha256 = "12c97044fd2138d3722b84090ee10dcaecd4be694575f03ecec472c006cd7dd9";
           pname = "seekback";
           subPackages = [ "cmd/seekback" ];
+          nativeBuildInputs = with pkgs; [
+            pkg-config
+          ];
+          buildInputs = with pkgs; [
+            portaudio
+          ];
         };
       });
 }
