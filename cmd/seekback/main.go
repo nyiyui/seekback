@@ -168,6 +168,9 @@ Record:
 
 func writeLatestSymlink(name string) {
 	// It's simpler to write remove-then-link than to try making a symlink and then checking for "file already exists" errors.
-	check(os.Remove(latestFilename))
+	err := os.Remove(latestFilename)
+	if !os.IsNotExist(err) {
+		check(err)
+	}
 	check(os.Symlink(name, latestFilename))
 }
