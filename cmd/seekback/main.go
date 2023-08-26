@@ -21,7 +21,7 @@ var fileNameTemplate string
 var latestFilename string
 
 func main() {
-	flag.IntVar(&bufferSize, "buffer-size", 20*10000, "buffer size to keep (i.e. audio saved before the dump command) (generally 1000 = 1 second)")
+	flag.IntVar(&bufferSize, "buffer-size", 60*1000, "buffer size to keep (i.e. audio saved before the dump command) (generally 1000 = 1 second)")
 	flag.StringVar(&fileNameTemplate, "name", "seekback-%s.aiff", "filename template to save recordings to")
 	flag.StringVar(&latestFilename, "latest-name", "seekback-latest.aiff", "filename to put a symlink to the latest recording")
 	flag.Parse()
@@ -34,6 +34,13 @@ func main() {
 
 	dumpCh := make(chan DumpRequest)
 	go readRequests(dumpCh)
+	// for testing
+	//go func() {
+	//	t := time.NewTicker(1 * time.Second)
+	//	for range t.C {
+	//		dumpCh <- DumpRequest{}
+	//	}
+	//}()
 	loop(dumpCh)
 }
 
@@ -147,7 +154,7 @@ func dump[E any](t time.Time, stream *portaudio.Stream, in []int32, data [][64]i
 		check(f.Close())
 	}()
 
-	for i := dataStart; i <= dataEnd; i = (i + 1) % len(data) {
+	for i := dataStart; i != dataEnd; i = (i + 1) % len(data) {
 		check(binary.Write(f, binary.BigEndian, data[i]))
 		nSamples += len(in)
 	}
