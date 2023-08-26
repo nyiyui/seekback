@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -28,7 +29,7 @@ func main() {
 		log.Fatalf("buffer size must be positive")
 	}
 	if strings.Count(fileNameTemplate, "%s") != 1 {
-		log.Fatalf("filename template must contains one %%s")
+		log.Fatalf("filename template %s must contains one %%s", strconv.Quote(fileNameTemplate))
 	}
 
 	dumpCh := make(chan DumpRequest)
