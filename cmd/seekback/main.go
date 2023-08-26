@@ -1,13 +1,14 @@
 package main
 
 import (
-	"bufio"
 	"encoding/binary"
 	"flag"
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/gordonklaus/portaudio"
@@ -46,13 +47,12 @@ type DumpRequest struct {
 }
 
 func readRequests(dumpCh chan<- DumpRequest) {
-	r := bufio.NewReader(os.Stdin)
-	for {
-		_, err := r.ReadString('\n')
-		check(err)
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGUSR1)
+	for range sigs {
 		log.Print("dumping")
 		dumpCh <- DumpRequest{
-			Duration: 2 * time.Second,
+			Duration: 0,
 		}
 	}
 }
