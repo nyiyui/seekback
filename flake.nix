@@ -22,14 +22,8 @@
         devShells = let pkgs = nixpkgsFor.${system};
         in {
           default = pkgs.mkShell {
-            nativeBuildInputs = with pkgs; [
-              pkg-config
-              go
-            ];
-            buildInputs = with pkgs; [
-              nixfmt
-              portaudio
-            ];
+            nativeBuildInputs = with pkgs; [ pkg-config go ];
+            buildInputs = with pkgs; [ nixfmt portaudio ];
           };
         };
         packages.default = pkgs.buildGoModule {
@@ -37,23 +31,55 @@
           src = ./.;
           tags = [ "sdnotify" ];
           #vendorSha256 = pkgs.lib.fakeSha256; # use ./base64-hex to get sha256 from error output
-          vendorSha256 = "12c97044fd2138d3722b84090ee10dcaecd4be694575f03ecec472c006cd7dd9";
+          vendorSha256 =
+            "12c97044fd2138d3722b84090ee10dcaecd4be694575f03ecec472c006cd7dd9";
           pname = "seekback";
           subPackages = [ "cmd/seekback" ];
-          nativeBuildInputs = with pkgs; [
-            pkg-config
-          ];
-          buildInputs = with pkgs; [
-            portaudio
-          ];
+          nativeBuildInputs = with pkgs; [ pkg-config ];
+          buildInputs = with pkgs; [ portaudio ];
         };
-        #nixosModules.default = { config, lib, pkgs, ... }:
-        #with lib; with types; let
-        #  cfg = config.seekback.services.seekback;
-        #in {
-        #  options.seekback.services.seekback = {
-        #    enable = mkEnableOption "the Seekback service";
-        #  };
-        #};
+        nixosModules.default = { config, lib, pkgs, ... }:
+          with lib;
+          with types;
+          let cfg = config.seekback.services.seekback;
+          in {
+            options.seekback.services.seekback = {
+              enable = mkEnableOption "the Seekback service";
+              bufferSize = mkOption {
+                type = int;
+                default = 200000;
+                description = "size of ring buffer in samples";
+              };
+              name = mkOption {
+                type = path;
+                default = "seekback-%%s.aiff";
+                description =
+                  "Template of path to save recordings to. %%s is replaced with the dump time (in RFC3339 format)";
+              };
+              latestName = mkOption {
+                type = path;
+                default = "seekback-latest.aiff";
+                description = "Path to symlink to the latest dump.";
+              };
+            };
+            config = mkIf cfg.enable {
+              systemd.user.services.seekback = {
+                Unit = {
+                  Description = "Seekback: replay audio from the past";
+                  StartLimitIntervalSec = 350;
+                  StartLimitBurst = 30;
+                };
+                Service = {
+                  ExecStart = "${
+                      specialArgs.seekback.packages.${pkgs.system}.default
+                    }/bin/seekback"
+                    + " -buffer-size ${builtins.toString cfg.bufferSize}"
+                    + " -name ${cfg.name}" + " -latest-name ${cfg.latestName}";
+                  Restart = "on-failure";
+                  RestartSec = 3;
+                };
+              };
+            };
+          };
       });
 }
