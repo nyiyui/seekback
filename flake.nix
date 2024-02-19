@@ -30,9 +30,9 @@
           inherit version;
           src = ./.;
           tags = [ "sdnotify" ];
-          #vendorSha256 = pkgs.lib.fakeSha256; # use ./base64-hex to get sha256 from error output
-          vendorSha256 =
-            "12c97044fd2138d3722b84090ee10dcaecd4be694575f03ecec472c006cd7dd9";
+          #vendorHash = pkgs.lib.fakeSha256;
+          vendorHash =
+            "sha256-EslwRP0hONNyK4QJDuENyuzUvmlFdfA+zsRywAbNfdk=";
           pname = "seekback";
           subPackages = [ "cmd/seekback" ];
           nativeBuildInputs = with pkgs; [ pkg-config ];
